@@ -48,7 +48,7 @@ void my_log_callback(struct mosquitto *, void *, int, const char *){
 void my_subscribe_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
 {
     int i;
-    printf("Subscribed (mid: %d)\n", mid);
+    printf("Subscribed (mid:)\n");
 }
 
 int main(int argc, char *argv[])

@@ -3,8 +3,6 @@
 
 #include <event.h>
 #include <mosquitto.h>
-#include "TMqttWrapper.h"
-
 
 class MainServer{
 public:
@@ -18,18 +16,15 @@ public:
 
 private:
     MainServer();
-    void initMqtt();
     void init( );
 
 private:
     struct event_base * base_;
     struct event *      stdin_;
     struct mosquitto *  mqtt_;
-    TMqttWrapper *mqttpp_;
 
 private:
     static void stdinCB(evutil_socket_t socket, short what, void *arg);
-    static void on_message(struct mosquitto *mqtt, void *arg, const struct mosquitto_message *message);
 };
 
 #endif

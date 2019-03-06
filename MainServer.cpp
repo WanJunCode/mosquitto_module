@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <string>
 
 // 连接回调函数，当连接成功时会进入这里，可以在这里进行连接成功之后的操作，比如连接之后的信息同步
 void my_connect_callback(struct mosquitto *mosq, void *obj, int rc)
@@ -19,35 +20,31 @@ void my_publish_callback(struct mosquitto *mosq, void *obj, int mid)
     printf("publish cb\n");
 }
 
-void my_log_callback(struct mosquitto *, void *, int, const char *){
-    printf("log cb\n");
+void my_log_callback(struct mosquitto *mosq, void *obj, int level, const char *str){
+    printf("log callback: level[%d] str[%s]\n",level,str);
+    
 }
 
-// 订阅消息回调
 void my_subscribe_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
 {
-    printf("subscribe cb\n");
-}
-
-void message(struct mosquitto *, void *, const struct mosquitto_message *){
-    printf("message...\n");
+    std::string message((char *)(msg->payload),msg->payloadlen);
+    printf("subscribe cb:[%s]\n",message.c_str());
 }
 
 MainServer::MainServer()
-    :mqttpp_(NULL),
-     mqtt_(NULL){
+    :mqtt_(NULL){
     base_ = event_base_new();
-    initMqtt();
     init();
 }
 
 MainServer::~MainServer(){
     printf("析构函数...\n");
-    mosquitto_loop_stop(mqtt_,true);
-    delete mqttpp_;
+    if(mqtt_ != NULL){
+        mosquitto_loop_stop(mqtt_,true);
+        mosquitto_destroy(mqtt_);
+    }
     event_free(stdin_);
     event_base_free(base_);
-    mosquitto_destroy(mqtt_);
 }
 
 void
@@ -55,12 +52,6 @@ MainServer::service_loop(){
     stdin_ = event_new(base_, STDIN_FILENO, EV_READ | EV_PERSIST, stdinCB, this);
     event_add(stdin_, NULL);
     event_base_dispatch(base_);
-}
-
-void MainServer::initMqtt(){
-    mqttpp_ = new TMqttWrapper("wan",true);
-    mqttpp_->connect("wanjun","","localhost");
-    mqttpp_->subscribe_topic("wanjun");
 }
 
 void MainServer::init(){
@@ -72,8 +63,6 @@ void MainServer::init(){
     mosquitto_message_callback_set(mqtt_, my_subscribe_callback);
     mosquitto_log_callback_set(mqtt_,my_log_callback);
 
-    // mosquitto_message_callback_set(mqtt_,message);
-    
     int err = mosquitto_connect(mqtt_,"localhost",1883,60);
     if(err == MOSQ_ERR_SUCCESS){
         printf("mosquitto connect successful\n");
@@ -86,10 +75,6 @@ void MainServer::init(){
     if(err == MOSQ_ERR_SUCCESS){
         printf("mosquitto loop start successful\n");
     }
-    // 阻塞式的循环
-    // mosquitto_loop_forever(client,0,-1);
-
-    printf("after loop\n");
 }
 
 // STATIC

@@ -3,16 +3,16 @@
 CXX = g++ -g -std=c++11
 LDFLAGS = -lmosquittopp -lmosquitto -levent
 
-all: server client client2
+all: server wj-mosquitto wj-mosquitto2
 
 server: server.o
 	$(CXX) $^ $(LDFLAGS) -o $@ 
 
-client: client.o MainServer.o TMqttWrapper.o
+wj-mosquitto: client.o MainServer.o TMqttWrapper.o
 	$(CXX) $^ $(LDFLAGS) -o $@ 
 
-client2: client2.o
+wj-mosquitto2: client2.o
 	$(CXX) $^ $(LDFLAGS) -o $@ 
 
 clean:
-	rm -rf server client client2 *.o core
+	rm -rf server wj-mosquitto wj-mosquitto2 *.o core
