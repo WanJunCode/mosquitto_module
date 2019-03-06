@@ -19,7 +19,7 @@ public:
 private:
     MainServer();
     void initMqtt();
-    void init(mosquitto *client);
+    void init( );
 
 private:
     struct event_base * base_;
